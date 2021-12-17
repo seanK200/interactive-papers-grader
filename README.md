@@ -66,7 +66,7 @@ The folder contains one or more Interactive Paper html file.
 
 ### Choose subdirectories (Case 1)
 For a folder that contains subfolders that contain one or more Interactive Paper html file(s) (**Case 1**), you will be asked to choose the subfolders to grade. Use the up/down arrow keys and the space key to select folders.
-> Tip: Hit the 'a' key to select **(a)**ll
+> Tip: Hit the 'a' key to select (a)ll
 ```
 ? Select folders to grade (<up>, <down> to move, <space> to select, <a> to toggle, <i> to invert)
  ○ group1
@@ -75,4 +75,4 @@ For a folder that contains subfolders that contain one or more Interactive Paper
 ```
 
 ### Viewing grading results
-After some time the grading will be finished. Check the console output for a summary of the grading results. A more detailed report file will be generated in each target folder(s), which you can view by opening "GRADING_FEEDBACK.txt".
+After some time the grading will be finished. Check the console output for a summary of the grading results. A more detailed report file will be generated in each target folder(s), which you can view by opening `GRADING_FEEDBACK.txt`.
