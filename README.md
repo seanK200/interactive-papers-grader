@@ -1,6 +1,6 @@
 # Interactive Papers Grader
 
-## Prerequisits
+## Prerequisites
 Make sure [Python3](https://www.python.org/downloads/) is installed in your system. For Windows users, make sure [to add Python to your PATH environment variable](https://docs.python.org/3/using/windows.html#excursus-setting-environment-variables).
 Run the following command to check that everything is set.
 ```
