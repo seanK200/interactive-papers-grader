@@ -316,7 +316,7 @@ def get_problems_string(problematic_footnotes):
 
     # Orphaned footnotes
     if orphaned:
-        problems_str += f">> Found {len(orphaned)} orphaned footnotes.\n"
+        problems_str += f">> Found {len(orphaned)} orphaned footnote{'s' if len(orphaned) > 1 else ''}.\n"
         problems_str += ORPHANED_FOOTNOTE_DESCRIPTION + "\n\n"
         for footnote_obj in orphaned:
             problems_str += str(footnote_obj) + "\n\n"
@@ -324,7 +324,7 @@ def get_problems_string(problematic_footnotes):
     
     # Broken footnotes
     if broken:
-        problems_str += f">> Found {len(broken)} broken footnotes.\n"
+        problems_str += f">> Found {len(broken)} broken footnote{'s' if len(broken) > 1 else ''}.\n"
         problems_str += BROKEN_FOOTNOTE_DESCRIPTION + "\n\n"
         for footnote_obj in broken:
             problems_str += str(footnote_obj) + "\n\n"
@@ -332,7 +332,7 @@ def get_problems_string(problematic_footnotes):
     
     # Footnotes with duplicates
     if duplicates:
-        problems_str += f">> Found {len(duplicates)} footnotes with duplicates.\n"
+        problems_str += f">> Found {len(duplicates)} footnote{'s' if len(duplicates) > 1 else ''} with duplicates.\n"
         problems_str += DUPLICATE_FOOTNOTE_DESCRIPTION + "\n\n"
         for footnote_obj in duplicates:
             problems_str += str(footnote_obj) + "\n\n"
@@ -340,7 +340,7 @@ def get_problems_string(problematic_footnotes):
     
     # Footnote links/contents with the id attribute empty
     if empty_id:
-        problems_str += f">> Found {len(empty_id)} footnotes with an empty id attribute.\n"
+        problems_str += f">> Found {len(empty_id)} footnote{'s' if len(empty_id) > 1 else ''} with an empty id attribute.\n"
         problems_str += EMPTY_ID_FOOTNOTE_DESCRIPTION + '\n\n'
         for footnote_obj in empty_id:
             problems_str += str(footnote_obj) + '\n\n'
@@ -361,7 +361,7 @@ def get_analysis_string(correct_count, problematic_count, problematic_footnotes)
     analysis_string += get_problems_string(problematic_footnotes)
     return analysis_string
 
-def run_analysis(filepath:str)->tuple[bool, str]:
+def run_analysis(filepath:str)->tuple[dict, str]:
     """
     Run check on the given Interactive Paper HTML code.
 
@@ -369,8 +369,13 @@ def run_analysis(filepath:str)->tuple[bool, str]:
         Path to an HTML file containing Interactive Paper code.
 
     (Return)
-        check_passed:bool
-            True when all footnote are used correctly, false otherwise.
+        analysis_result:dict
+            passed:bool
+                True when a ll footnote are used correctly, False otherwise.
+            correct_count:int
+                Number of correctly formatted footnotes
+            problematic_count:int
+                Number of incorrectly formatted footnotes
         analysis_string:str
             String containing explanation of check result
     """
@@ -380,9 +385,13 @@ def run_analysis(filepath:str)->tuple[bool, str]:
     analysis_string = \
         get_analysis_string(correct_count, problematic_count, problematic_footnotes)
     
-    analysis_passed = problematic_count == 0
+    analysis_result = {
+        'passed': problematic_count == 0 and correct_count > 0,
+        'correct_count' : correct_count,
+        'problematic_count': problematic_count
+    }
     
-    return analysis_passed, analysis_string
+    return analysis_result, analysis_string
 
 def main():
     """

@@ -1,6 +1,7 @@
 import os, sys, subprocess
 import ip_analysis
 
+VERSION = 1.0
 RECENT_SRC_PATH_FILE = 'recent_source_path.txt'
 HTML_FILE_NAME = 'index.html'
 
@@ -10,7 +11,7 @@ try:
     from PyInquirer import prompt
     from bs4 import BeautifulSoup
 except ModuleNotFoundError:
-    print("Depenedencies not installed.")
+    print("Error: Depenedencies not installed.")
     sys.exit(1)
 # CLI deps
 try:
@@ -162,48 +163,58 @@ def check_syntax(filename:str):
     return check_syntax_result
 
 def grade_directory(dirpath):
-    # Grade result
-    grading_result = {
-        'error': False,
-        'message': '',
-        'check_syntax_passed': False,
-        'check_footnotes_passed': False
-    }
-
+    grading_results = [] # Return value
+    
     # Find index.html in given directory 'dirpath'
-    html_file_path = ''
+    html_file_paths = []
     for f in os.scandir(dirpath):
-        if f.name == HTML_FILE_NAME:
-            html_file_path = f.path
+        if '.html' in f.name:
+            html_file_paths.append(f)
 
-    # index.html not found
-    if not html_file_path:
-        grading_result['error'] = True
-        grading_result['message'] = f"HTML_FILE_NAME not found in directory '{dirpath}'."
-        return grading_result
-    
-    # Check syntax
-    check_syntax_result = check_syntax(html_file_path)
-    grading_result['check_syntax_passed'] = check_syntax_result['passed']
-    with open(os.path.join(dirpath, "GRADING_FEEDBACK.txt"), "w") as f:
-        f.write("1. Syntax Check Results\n\n")
-        if not check_syntax_result['passed']: 
-            if check_syntax_result['output']:            
-                f.write("Syntax error(s) found. The details of the first(if many) syntax error found is shown below.\n\n")
-                f.write(check_syntax_result['output'])
-                f.write("\n\n")
-        else:
-            f.write("No syntax error found. Well done!\n\n\n")
-    
-    # Check footnotes
-    analysis_result, analysis_string = ip_analysis.run_analysis(html_file_path)
-    grading_result['check_footnotes_passed'] = analysis_result
-    if not analysis_result and analysis_string:
-        with open(os.path.join(dirpath, "GRADING_FEEDBACK.txt"), "a") as f:
-            f.write("2. Footnote Analysis Results\n\n")
-            f.write(analysis_string)
+    for html_file in html_file_paths:
+        # Grade result
+        grading_result = {
+            'filename': html_file.name,
+            'error': False,
+            'message': '',
+            'check_syntax_passed': False,
+            'check_footnotes_passed': False,
+        }
 
-    return grading_result
+        html_file_path = html_file.path
+        # index.html not found
+        if not html_file_path:
+            grading_result['error'] = True
+            grading_result['message'] = f"HTML_FILE_NAME not found in directory '{dirpath}'."
+            return grading_result
+        
+        # Check syntax
+        check_syntax_result = check_syntax(html_file_path)
+        grading_result['check_syntax_passed'] = check_syntax_result['passed']
+        with open(os.path.join(dirpath, "GRADING_FEEDBACK.txt"), "w") as f:
+            f.write("1. Syntax Check Results\n\n")
+            if not check_syntax_result['passed']: 
+                if check_syntax_result['output']:            
+                    f.write("Syntax error(s) found. The details of the first(if many) syntax error found is shown below.\n\n")
+                    f.write(check_syntax_result['output'])
+                    f.write("\n\n")
+            else:
+                f.write("No syntax error found. Well done!\n\n\n")
+        
+        # Check footnotes
+        analysis_result, analysis_string = ip_analysis.run_analysis(html_file_path)
+        grading_result['check_footnotes_passed'] = analysis_result['passed']
+        # If no footnote was found in HTML, issue a warning
+        if not analysis_result['correct_count'] and not analysis_result['problematic_count']:
+            grading_result['message'] = "Warning: No footnotes found. Are you sure this is an Interactive Paper file?"
+        if not analysis_result['passed'] and analysis_string:
+            with open(os.path.join(dirpath, "GRADING_FEEDBACK.txt"), "a") as f:
+                f.write("2. Footnote Analysis Results\n\n")
+                f.write(analysis_string)
+        
+        grading_results.append(grading_result)
+
+    return grading_results
 
 def check_result(result:bool)->str:
     if result:
@@ -211,6 +222,7 @@ def check_result(result:bool)->str:
     return '\u274c Failed'
 
 def main():
+    print(f"Interactive Paper Grader Version {VERSION}", end="\n\n", flush=True)
     try:
         source_path = prompt_source_path()
         
@@ -224,16 +236,20 @@ def main():
 
         print("Starting automated grading...", flush=True)
         for idx, dirpath in enumerate(chosen_dirs):
-            grading_result = grade_directory(dirpath)
+            grading_results = grade_directory(dirpath)
             print(f"[{idx + 1}/{len(chosen_dirs)}]  <{os.path.basename(dirpath)}>")
-            if grading_result['error']:
-                print(f"\tError: {grading_result['message']}")
-            else:
-                print(f'\tSyntax check   : {check_result(grading_result["check_syntax_passed"])}')
-                print(f'\tFootnotes check: {check_result(grading_result["check_footnotes_passed"])}')
-            print()
+            for grading_result in grading_results:
+                print(f"'{grading_result['filename']}'")
+                if grading_result['error']:
+                    print(f"\tError: {grading_result['message']}")
+                else:
+                    print(f'\tSyntax check   : {check_result(grading_result["check_syntax_passed"])}')
+                    print(f'\tFootnotes check: {check_result(grading_result["check_footnotes_passed"])}')
+                    if grading_result['message']:
+                        print(grading_result['message'])
+                print()
         print("Grading complete!")
-        print("Check 'GRADING_FEEDBACK.txt' files in each target folders for detailed grading results.")
+        print("Check 'GRADING_FEEDBACK.txt' files in each target folders for detailed grading reports.")
     except KeyboardInterrupt:
         sys.exit(1)
 
