@@ -12,7 +12,7 @@ Python 3.x.x
 ```
 
 ## Getting Ready
-You only have to follow the instructions here once when you first install the grader to your computer.
+You only have to follow the instructions in this section one time.
 ### 1. Downloading the source code
 ```
 git clone https://github.com/seanK200/interactive-papers-grader.git
@@ -61,15 +61,35 @@ Enter the path to the **FOLDER**(not to a source FILE) where the Interactive Pap
 
 The folder you entered above can be either of the following:
 
-### Case 1
+#### Case 1
 The folder contains subfolders that contain one or more Interactive Paper html file(s).
 
-### Case 2
+Example: week0
+```
+interactive-papers/docs/week0
+├── group1
+│   ├── images
+│   └── index.html
+├── group2
+│   ├── images
+│   └── index.html
+└── group3
+    ├── images
+    └── index.html
+```
+
+#### Case 2
 The folder contains one or more Interactive Paper html file.
 
+Example: group1
+```
+interactive-papers/docs/week0/group1
+├── images
+└── index.html
+```
 
 ### Choose subdirectories (Case 1)
-For a folder that contains subfolders that contain one or more Interactive Paper html file(s) (**Case 1**), you will be asked to choose the subfolders to grade. Use the up/down arrow keys and the space key to select folders.
+If needed (**Case 1**), you will be asked to choose the subfolders to grade. Use the up/down arrow keys and the space key to select folders.
 > Tip: Hit the 'a' key to select (a)ll
 ```
 ? Select folders to grade (<up>, <down> to move, <space> to select, <a> to toggle, <i> to invert)
@@ -80,3 +100,6 @@ For a folder that contains subfolders that contain one or more Interactive Paper
 
 ### Viewing grading results
 After some time the grading will be finished. Check the console output for a summary of the grading results. A more detailed report file will be generated in each target folder(s), which you can view by opening `GRADING_FEEDBACK.txt`.
+
+## License
+This project is licensed using the MIT license (see LICENSE).

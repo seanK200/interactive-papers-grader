@@ -4,6 +4,7 @@ import ip_analysis
 VERSION = 1.0
 RECENT_SRC_PATH_FILE = 'recent_source_path.txt'
 HTML_FILE_NAME = 'index.html'
+FEEDBACK_FILE_NAME = 'GRADING_FEEDBACK.txt'
 
 # Check for dependencies
 # Python deps
@@ -11,7 +12,7 @@ try:
     from PyInquirer import prompt
     from bs4 import BeautifulSoup
 except ModuleNotFoundError:
-    print("Error: Depenedencies not installed.")
+    print("Error: Depenedent packages not found.")
     sys.exit(1)
 # CLI deps
 try:
@@ -23,7 +24,7 @@ except subprocess.CalledProcessError as e:
         print(f"Prettier unexpected exitted with code {e.returncode}.")
     sys.exit(1)
 except FileNotFoundError:
-    print("Dependencies not installed.")
+    print("Error: Dependencies not found (prettier).")
     sys.exit(1)
 
 def validte_source_path(path_str):
@@ -44,6 +45,7 @@ def get_default_source_path():
         with open(RECENT_SRC_PATH_FILE, "r") as rf:
             default_path = rf.read().strip()
     
+    # If recently used filepath no longer exists
     if default_path and not os.path.isdir(default_path):
         default_path = ''
         os.remove(RECENT_SRC_PATH_FILE)
@@ -69,8 +71,7 @@ def get_default_source_path():
                             continue
                 if not ip_dirs and not ip_files:
                     # Interactive Paper folder found
-                    docs_dirpath = os.path.join(f.path, 'docs')
-                    default_path = docs_dirpath
+                    default_path = os.path.join(f.path, 'docs')
 
     return default_path
 
@@ -171,6 +172,8 @@ def grade_directory(dirpath):
         if '.html' in f.name:
             html_file_paths.append(f)
 
+    first_file_in_directory = True
+
     for html_file in html_file_paths:
         # Grade result
         grading_result = {
@@ -191,10 +194,17 @@ def grade_directory(dirpath):
         # Check syntax
         check_syntax_result = check_syntax(html_file_path)
         grading_result['check_syntax_passed'] = check_syntax_result['passed']
-        with open(os.path.join(dirpath, "GRADING_FEEDBACK.txt"), "w") as f:
+        if first_file_in_directory:
+            file_open_mode = 'w'
+            first_file_in_directory = False
+        else:
+            file_open_mode = 'a'
+
+        with open(os.path.join(dirpath, FEEDBACK_FILE_NAME), file_open_mode) as f:
+            f.write(f'<{html_file.name}>\n\n')
             f.write("1. Syntax Check Results\n\n")
-            if not check_syntax_result['passed']: 
-                if check_syntax_result['output']:            
+            if not check_syntax_result['passed']:
+                if check_syntax_result['output']:     
                     f.write("Syntax error(s) found. The details of the first(if many) syntax error found is shown below.\n\n")
                     f.write(check_syntax_result['output'])
                     f.write("\n\n")
@@ -208,7 +218,7 @@ def grade_directory(dirpath):
         if not analysis_result['correct_count'] and not analysis_result['problematic_count']:
             grading_result['message'] = "Warning: No footnotes found. Are you sure this is an Interactive Paper file?"
         if not analysis_result['passed'] and analysis_string:
-            with open(os.path.join(dirpath, "GRADING_FEEDBACK.txt"), "a") as f:
+            with open(os.path.join(dirpath, FEEDBACK_FILE_NAME), "a") as f:
                 f.write("2. Footnote Analysis Results\n\n")
                 f.write(analysis_string)
         
@@ -226,12 +236,15 @@ def main():
     try:
         source_path = prompt_source_path()
         
-        # If index.html in chosen path, start grading the entered folder
+        # If one or more html file(s) exist in chosen path, start grading
+        filenames_in_src_path = [f.name for f in os.scandir(source_path)]
+        chosen_dirs = []
+        for filename in filenames_in_src_path:
+            if '.html' in filename:
+                chosen_dirs = [source_path]
+                break
         # If not, make user choose from subfolders
-        files_in_src_path = [f.name for f in os.scandir(source_path)]
-        if HTML_FILE_NAME in files_in_src_path:
-            chosen_dirs = [source_path]
-        else:
+        if not chosen_dirs:
             chosen_dirs = prompt_choose_dirs(source_path)
 
         print("Starting automated grading...", flush=True)
@@ -249,7 +262,7 @@ def main():
                         print(grading_result['message'])
                 print()
         print("Grading complete!")
-        print("Check 'GRADING_FEEDBACK.txt' files in each target folders for detailed grading reports.")
+        print(f"Check '{FEEDBACK_FILE_NAME}' files in each target folders for detailed grading reports.")
     except KeyboardInterrupt:
         sys.exit(1)
 
