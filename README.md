@@ -1,6 +1,7 @@
 # Interactive Papers Grader
 
 ## Prerequisites
+### Python
 Make sure [Python3](https://www.python.org/downloads/) is installed in your system. For Windows users, make sure [to add Python to your PATH environment variable](https://docs.python.org/3/using/windows.html#excursus-setting-environment-variables).
 Run the following command to check that everything is set.
 ```
@@ -10,6 +11,9 @@ You should see the following output, with the 'x's replaced with the actual vers
 ```
 Python 3.x.x
 ```
+### Prettier (and NodeJS)
+Download and install [NodeJS](https://nodejs.org) and [Prettier](https://prettier.io) on your system.
+
 
 ## Getting Ready
 You only have to follow the instructions in this section one time.

@@ -371,7 +371,7 @@ def run_analysis(filepath:str)->tuple[dict, str]:
     (Return)
         analysis_result:dict
             passed:bool
-                True when a ll footnote are used correctly, False otherwise.
+                True when all footnotes are used correctly, False otherwise.
             correct_count:int
                 Number of correctly formatted footnotes
             problematic_count:int
